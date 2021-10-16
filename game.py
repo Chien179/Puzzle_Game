@@ -1,4 +1,6 @@
 import pygame
+from puzzle import Puzzle
+
 
 class Game:
     def __init__(self, width, height, imgWidth, imgHeight, size):
@@ -8,7 +10,7 @@ class Game:
         self.__imgWidth, self.__imgHeight = imgWidth, imgHeight
         self.__size = size
         self.__screen = pygame.display.set_mode((self.__width,self.__height))
-        #self.__puzzle = Puzzle('images/1.jpg', self.__backgroundColor, self.__imgWidth, self.__imgHeight, self.__size)
+        self.__puzzle = Puzzle('images/1.jpg', self.__backgroundColor, self.__imgWidth, self.__imgHeight, self.__size)
         self.__start = False
         pygame.display.set_caption('Puzzle')
 
@@ -32,43 +34,43 @@ class Game:
         surface.blit(title_text, self.__title_text_rect)
         surface.blit(shuffle_text, self.__shuffle_text_rect)
 
-    # def __drawPuzzle(self):
-    #     x, y = 20, 100
-    #     for i in range(0, 3):
-    #         imgTemp = []
-    #         for j in range(0, 3):
-    #             # creat rect to move image pieces
-    #             imgTemp.append(self.__puzzle.imgPieces[i][j].get_rect(left=x, top=y))
-    #             self.__screen.blit(self.__puzzle.imgPieces[i][j], imgTemp[j])
-    #             x += 480 / 3 + 1
-    #             if j == 2:
-    #                 x = 20
-    #                 y += 480 / 3 + 1
-    #         self.__puzzle.imgRect.append(imgTemp)
+    def __drawPuzzle(self):
+        x, y = 20, 100
+        for i in range(0, 3):
+            imgTemp = []
+            for j in range(0, 3):
+                # creat rect to move image pieces
+                imgTemp.append(self.__puzzle.imgPieces[i][j].get_rect(left=x, top=y))
+                self.__screen.blit(self.__puzzle.imgPieces[i][j], imgTemp[j])
+                x += 480 / 3 + 1
+                if j == 2:
+                    x = 20
+                    y += 480 / 3 + 1
+            self.__puzzle.imgRect.append(imgTemp)
 
     def __update(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-            # if event.type == pygame.MOUSEBUTTONUP:
-            #     if self.__shuffle_text_rect.collidepoint(pygame.mouse.get_pos()):
-            #         self.__puzzle.imgPieces.clear()
-            #         self.__puzzle = Puzzle('images/1.jpg', self.__backgroundColor, self.__imgWidth, self.__imgHeight, self.__size)
-            #         self.__puzzle.shuffle()
-            #         self.__drawPuzzle()
-            #         self.__start = True
-            #     elif self.__start is True:
-            #         for i in range(0, self.__size):
-            #             for j in range(0, self.__size):
-            #                 if self.__puzzle.imgRect[i][j].collidepoint(pygame.mouse.get_pos()):
-            #                     self.__puzzle.control(i, j)
-            #                 self.__drawPuzzle()
+            if event.type == pygame.MOUSEBUTTONUP:
+                if self.__shuffle_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    self.__puzzle.imgPieces.clear()
+                    self.__puzzle = Puzzle('images/1.jpg', self.__backgroundColor, self.__imgWidth, self.__imgHeight, self.__size)
+                    self.__puzzle.shuffle()
+                    self.__drawPuzzle()
+                    self.__start = True
+                elif self.__start is True:
+                    for i in range(0, self.__size):
+                        for j in range(0, self.__size):
+                            if self.__puzzle.imgRect[i][j].collidepoint(pygame.mouse.get_pos()):
+                                self.__puzzle.control(i, j)
+                            self.__drawPuzzle()
 
     def game_loop(self):
         while True:
             self.__update()
             self.__draw()
-            # self.__drawPuzzle()
+            self.__drawPuzzle()
             pygame.display.update()
             pygame.time.Clock().tick(60)
