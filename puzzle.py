@@ -14,7 +14,9 @@ class Puzzle:
 
     def __createPuzzle(self, blankColor):
         img = pygame.image.load(self.__image).convert_alpha()
-        img = pygame.transform.smoothscale(img, (self.__width, self.__height))
+        x = int((img.get_width() - self.__width) / 2)
+        y = int((img.get_height() - self.__height) / 2)
+        img = img.subsurface((x, y, self.__width, self.__height))
 
         x, y = 0, 0
         for _ in range(0, self.__size):
