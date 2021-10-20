@@ -42,10 +42,10 @@ class Game:
                 # creat rect to move image pieces
                 imgTemp.append(self.__puzzle.imgPieces[i][j].get_rect(left=x, top=y))
                 self.__screen.blit(self.__puzzle.imgPieces[i][j], imgTemp[j])
-                x += 480 / 3 + 1
+                x += 480 / 3
                 if j == 2:
                     x = 20
-                    y += 480 / 3 + 1
+                    y += 480 / 3
             self.__puzzle.imgRect.append(imgTemp)
 
     def __update(self):
