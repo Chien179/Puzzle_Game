@@ -14,9 +14,10 @@ class Puzzle:
 
     def __createPuzzle(self, blankColor):
         img = pygame.image.load(self.__image).convert_alpha()
-        x = int((img.get_width() - self.__width) / 2)
-        y = int((img.get_height() - self.__height) / 2)
-        img = img.subsurface((x, y, self.__width, self.__height))
+        if img.get_width() > self.__width and img.get_height() > self.__height:
+            x = int((img.get_width() - self.__width) / 2)
+            y = int((img.get_height() - self.__height) / 2)
+            img = img.subsurface((x, y, self.__width, self.__height))
 
         x, y = 0, 0
         for _ in range(0, self.__size):
@@ -37,13 +38,13 @@ class Puzzle:
         imgTemp = []
         for i in range(0, self.__size):
             imgTemp.append(self.imgPieces[i].copy())
-        Num = [i for i in range(1, 10)]
+        num = [i for i in range(1, 10)]
         n = -1
 
         while n % 2 != 0:
-            random.shuffle(Num)
-            n = check_state(Num)
-        self.imgNum = numpy.reshape(Num, (3, 3))
+            random.shuffle(num)
+            n = check_state(num)
+        self.imgNum = numpy.reshape(num, (3, 3))
 
         for i in range(0, 3):
             for j in range(0, 3):
@@ -53,16 +54,16 @@ class Puzzle:
 
     def control(self, numPieceX, numPieceY):
         if numPieceX > 0:
-            if self.imgNum[numPieceX - 1][numPieceY] == 9:
+            if self.imgNum[numPieceX - 1][numPieceY] == self.__size ** 2:
                 self.__swap_row(numPieceX, numPieceX - 1, numPieceY)
         if numPieceX < 3 - 1:
-            if self.imgNum[numPieceX + 1][numPieceY] == 9:
+            if self.imgNum[numPieceX + 1][numPieceY] == self.__size ** 2:
                 self.__swap_row(numPieceX, numPieceX + 1, numPieceY)
         if numPieceY > 0:
-            if self.imgNum[numPieceX][numPieceY - 1] == 9:
+            if self.imgNum[numPieceX][numPieceY - 1] == self.__size ** 2:
                 self.__swap_col(numPieceX, numPieceY, numPieceY - 1)
         if numPieceY < 3 - 1:
-            if self.imgNum[numPieceX][numPieceY + 1] == 9:
+            if self.imgNum[numPieceX][numPieceY + 1] == self.__size ** 2:
                 self.__swap_col(numPieceX, numPieceY, numPieceY + 1)
 
     def __swap_row(self, row, rowb, col):
@@ -88,10 +89,10 @@ class Puzzle:
 def check_state(num):
     n = 0
     for i in range(0, 9):
-        sum = 0
+        s = 0
         for j in range(i + 1, 9):
-            if num[j] < num[i] and num[i] != 9:
-                sum += 1
-        n += sum
+            if num[j] < num[i] != 9:
+                s += 1
+        n += s
 
     return n
