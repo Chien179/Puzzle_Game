@@ -13,7 +13,6 @@ class Game:
         self.__start = False
         pygame.display.set_caption('Puzzle')
 
-
     def __create_font(self, font, fontSize, content, color, isBold):
         f = pygame.font.SysFont(font, fontSize, isBold, False)
         text = f.render(content, False, color)
@@ -24,19 +23,29 @@ class Game:
         surface = self.__screen
         surface.fill('#8AAAE5')
         
-        # text
-        shuffle_text = self.__create_font(font='Arial', fontSize=30, content='Shuffle', color='#FFFFFF', isBold=False)
+        #create text
+        shuffle_text = self.__create_font(font='Times New Roman', fontSize=30, content='Shuffle', color='#FFFFFF', isBold=False)
         self.__shuffle_text_rect = shuffle_text.get_rect(midleft=(650, 350))
 
         title_text = self.__create_font(font='Times New Roman', fontSize=35, content='PUZZLE', color='#FFFFFF', isBold=True)
         self.__title_text_rect = title_text.get_rect(center=(self.__width/2, 50))
 
-        music_text = self.__create_font(font='Arial', fontSize=20, content='MUTE', color='#FFFFFF', isBold=False)
+        music_text = self.__create_font(font='Times New Roman', fontSize=20, content='MUTE', color='#FFFFFF', isBold=False)
         self.__music_text_rect = music_text.get_rect(midleft=(20, 20))
 
+        volumeup_text = self.__create_font(font='Times New Roman', fontSize=35, content='+', color='#FFFFFF', isBold=True)
+        self.__volumeup_text_rect = volumeup_text.get_rect(midleft=(40, 50))
+        
+        volumedown_text = self.__create_font(font='Times New Roman', fontSize=35, content='-', color='#FFFFFF', isBold=True)
+        self.__volumedown_text_rect = volumedown_text.get_rect(midleft=(20, 50))
+
+        #draw text
         surface.blit(title_text, self.__title_text_rect)
         surface.blit(shuffle_text, self.__shuffle_text_rect)
         surface.blit(music_text, self.__music_text_rect)
+        surface.blit(volumeup_text, self.__volumeup_text_rect)
+        surface.blit(volumedown_text, self.__volumedown_text_rect)
+
         if self.__start:
             self.__screen.fill((0, 0, 0))
         else:
@@ -62,6 +71,8 @@ class Game:
                     y += imgPieceWidth
             self.__puzzle.imgRect.append(imgTemp)
 
+
+
     def __update(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -80,19 +91,30 @@ class Game:
                             if self.__puzzle.imgRect[i][j].collidepoint(pygame.mouse.get_pos()):
                                 self.__puzzle.control(i, j)
                             self.__drawPuzzle()
-                if self.__music_text_rect.collidepoint(pygame.mouse.get_pos()):
-                    if self.__isPlayingMusic:
+                elif self.__music_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    if pygame.mixer.music.get_busy(): #if music is played
                         pygame.mixer.music.pause()
-                        self.__isPlayingMusic = False
                     else:
                         pygame.mixer.music.unpause()
-                        self.__isPlayingMusic = True
-
+                elif self.__volumedown_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    if self.__currentVolume > 0:
+                        self.__currentVolume -= 0.1
+                        self.__setVolume(self.__currentVolume)
+                        # print(pygame.mixer.music.get_volume())
+                elif self.__volumeup_text_rect.collidepoint(pygame.mouse.get_pos()):  
+                    if self.__currentVolume < 1:
+                        self.__currentVolume += 0.1
+                        self.__setVolume(self.__currentVolume)
+                        # print(pygame.mixer.music.get_volume())
+    
     def __playBackgroundMusic(self):
-        self.__isPlayingMusic = True
-        pygame.mixer.music.unload()
         pygame.mixer.music.load("sounds/bgmusic1.mp3")
         pygame.mixer.music.play(loops=0, start=0.0)
+        pygame.mixer.music.set_volume(0.2)
+        self.__currentVolume = pygame.mixer.music.get_volume()
+
+    def __setVolume(self, vol):
+        pygame.mixer.music.set_volume(vol)
 
     def game_loop(self):
         self.__playBackgroundMusic()
