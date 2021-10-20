@@ -4,26 +4,25 @@ import pygame
 
 
 class Puzzle:
-    def __init__(self, image, blankColor, width, height, size):
-        self.__image = image
+    def __init__(self, image, width, height, size):
+        self.image = pygame.image.load(image).convert_alpha()
         self.imgPieces, self.imgRect = [], []
         self.__width, self.__height = width, height
         self.__size = size
         self.imgNum = [[]]
-        self.__createPuzzle(blankColor)
+        self.__createPuzzle()
 
-    def __createPuzzle(self, blankColor):
-        img = pygame.image.load(self.__image).convert_alpha()
-        if img.get_width() > self.__width and img.get_height() > self.__height:
-            x = int((img.get_width() - self.__width) / 2)
-            y = int((img.get_height() - self.__height) / 2)
-            img = img.subsurface((x, y, self.__width, self.__height))
+    def __createPuzzle(self):
+        if self.image.get_width() > self.__width and self.image.get_height() > self.__height:
+            x = int((self.image.get_width() - self.__width) / 2)
+            y = int((self.image.get_height() - self.__height) / 2)
+            self.image = self.image.subsurface((x, y, self.__width, self.__height))
 
         x, y = 0, 0
         for _ in range(0, self.__size):
             imgTemp = []
             for j in range(0, self.__size):
-                imgTemp.append(img.subsurface(x, y, self.__width / self.__size, self.__height / self.__size))
+                imgTemp.append(self.image.subsurface(x, y, self.__width / self.__size, self.__height / self.__size))
                 x += self.__width / self.__size
                 if j == 2:
                     x = 0
@@ -31,7 +30,9 @@ class Puzzle:
             self.imgPieces.append(imgTemp)
 
         blank = pygame.Surface((self.__width / self.__size, self.__height / self.__size))
-        blank.fill(blankColor)
+        blank = blank.convert_alpha()
+        blank.fill('black')
+        blank.set_alpha(180)
         self.imgPieces[self.__size - 1][self.__size - 1] = blank
 
     def shuffle(self):
@@ -83,7 +84,7 @@ class Puzzle:
         self.imgNum[row][colb] = numtemp
 
     def displayImage(self):
-        return pygame.image.load(self.__image).convert_alpha()
+        return pygame.image.load(self.image).convert_alpha()
 
 
 def check_state(num):
