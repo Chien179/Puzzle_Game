@@ -45,15 +45,10 @@ class Game:
         surface.blit(music_text, self.__music_text_rect)
         surface.blit(volumeup_text, self.__volumeup_text_rect)
         surface.blit(volumedown_text, self.__volumedown_text_rect)
-
-        if self.__start:
-            self.__screen.fill((0, 0, 0))
-        else:
-            surface.blit(self.__puzzle.image, (20, 100))
+        surface.blit(self.__puzzle.image, (20, 100))
 
 
     def __drawPuzzle(self):
-        self.__puzzle.image.set_alpha(200)
         self.__screen.blit(self.__puzzle.image, (20, 100))
 
         imgPieceWidth = self.__imgWidth / 3
@@ -61,17 +56,14 @@ class Game:
         for i in range(0, self.__size):
             imgTemp = []
             for j in range(0, self.__size):
-                # creat rect to move image pieces
-                imgTemp.append(self.__puzzle.imgPieces[i][j].get_rect(left=x, top=y))
-                pygame.draw.rect(self.__puzzle.imgPieces[i][j], (0, 0, 0), pygame.Rect(0, 0, imgPieceWidth + 1, imgPieceWidth + 1), 1)
+                imgTemp.append(self.__puzzle.imgPieces[i][j].get_rect(left=x, top=y)) # create rectangle to move image pieces
+                pygame.draw.rect(self.__puzzle.imgPieces[i][j], (0, 0, 0), pygame.Rect(0, 0, imgPieceWidth + 1, imgPieceWidth + 1), 1) # draw rectangle around image piece
                 self.__screen.blit(self.__puzzle.imgPieces[i][j], imgTemp[j])
                 x += imgPieceWidth
                 if j == self.__size - 1:
                     x = 20
                     y += imgPieceWidth
             self.__puzzle.imgRect.append(imgTemp)
-
-
 
     def __update(self):
         for event in pygame.event.get():
@@ -90,22 +82,21 @@ class Game:
                         for j in range(0, self.__size):
                             if self.__puzzle.imgRect[i][j].collidepoint(pygame.mouse.get_pos()):
                                 self.__puzzle.control(i, j)
-                            self.__drawPuzzle()
-                elif self.__music_text_rect.collidepoint(pygame.mouse.get_pos()):
+                                self.__drawPuzzle()
+
+                if self.__music_text_rect.collidepoint(pygame.mouse.get_pos()):
                     if pygame.mixer.music.get_busy(): #if music is played
                         pygame.mixer.music.pause()
                     else:
                         pygame.mixer.music.unpause()
-                elif self.__volumedown_text_rect.collidepoint(pygame.mouse.get_pos()):
+                if self.__volumedown_text_rect.collidepoint(pygame.mouse.get_pos()):
                     if self.__currentVolume > 0:
                         self.__currentVolume -= 0.1
                         self.__setVolume(self.__currentVolume)
-                        # print(pygame.mixer.music.get_volume())
-                elif self.__volumeup_text_rect.collidepoint(pygame.mouse.get_pos()):  
+                if self.__volumeup_text_rect.collidepoint(pygame.mouse.get_pos()):
                     if self.__currentVolume < 1:
                         self.__currentVolume += 0.1
                         self.__setVolume(self.__currentVolume)
-                        # print(pygame.mixer.music.get_volume())
     
     def __playBackgroundMusic(self):
         pygame.mixer.music.load("sounds/bgmusic1.mp3")
