@@ -3,6 +3,7 @@ import pygame.gfxdraw
 from puzzle import Puzzle
 
 class Game:
+
     def __init__(self, width, height, imgWidth, imgHeight, size):
         pygame.init()
         self.__width, self.__height = width, height
@@ -11,6 +12,7 @@ class Game:
         self.__screen = pygame.display.set_mode((self.__width,self.__height))
         self.__puzzle = Puzzle('images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size)
         self.__start = False
+        self.__hovered = False #button Shuffle state
         pygame.display.set_caption('Puzzle')
 
     def __create_font(self, font, fontSize, content, color, isBold):
@@ -24,8 +26,8 @@ class Game:
         surface.fill('#8AAAE5')
         
         #create text
-        shuffle_text = self.__create_font(font='Times New Roman', fontSize=30, content='Shuffle', color='#FFFFFF', isBold=False)
-        self.__shuffle_text_rect = shuffle_text.get_rect(midleft=(650, 350))
+        # shuffle_text = self.__create_font(font='Times New Roman', fontSize=30, content='Shuffle', color='#FFFFFF', isBold=False)
+        # self.__shuffle_text_rect = shuffle_text.get_rect(midleft=(650, 350))
 
         title_text = self.__create_font(font='Times New Roman', fontSize=35, content='PUZZLE', color='#FFFFFF', isBold=True)
         self.__title_text_rect = title_text.get_rect(center=(self.__width/2, 50))
@@ -41,7 +43,7 @@ class Game:
 
         #draw text
         surface.blit(title_text, self.__title_text_rect)
-        surface.blit(shuffle_text, self.__shuffle_text_rect)
+        # surface.blit(shuffle_text, self.__shuffle_text_rect)
         surface.blit(music_text, self.__music_text_rect)
         surface.blit(volumeup_text, self.__volumeup_text_rect)
         surface.blit(volumedown_text, self.__volumedown_text_rect)
@@ -97,6 +99,11 @@ class Game:
                     if self.__currentVolume < 1:
                         self.__currentVolume += 0.1
                         self.__setVolume(self.__currentVolume)
+
+            if self.__shuffle_text_rect.collidepoint(pygame.mouse.get_pos()):
+                self.__hovered = True
+            else:
+                self.__hovered = False
     
     def __playBackgroundMusic(self):
         pygame.mixer.music.load("sounds/bgmusic1.mp3")
@@ -111,6 +118,20 @@ class Game:
         self.__playBackgroundMusic()
         self.__draw()
         while True:
+            self.__shuffleButtonUpdate()
             self.__update()
             pygame.display.update()
             pygame.time.Clock().tick(60)
+
+    def __shuffleButtonUpdate(self):
+        shuffle_text = self.__create_font(font='Times New Roman', fontSize=30, content='Shuffle', color=self.__get_color(), isBold=False)
+        self.__shuffle_text_rect = shuffle_text.get_rect(midleft=(650, 350))        
+        self.__screen.blit(shuffle_text, self.__shuffle_text_rect)
+
+    def __get_color(self):
+        if self.__hovered:
+            return (250, 250, 250)
+        else:
+            return (219, 213, 213)
+
+    
