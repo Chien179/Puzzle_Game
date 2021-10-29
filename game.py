@@ -1,7 +1,10 @@
+from typing import Text
 import pygame
 import pygame.gfxdraw
 from puzzle import Puzzle
 
+TEXT_FONT = 'fonts/OdibeeSans-Regular.ttf'
+BACKGROUND_COLOR = '#A2C6F0'
 class Game:
 
     def __init__(self, width, height, imgWidth, imgHeight, size):
@@ -12,47 +15,32 @@ class Game:
         self.__screen = pygame.display.set_mode((self.__width,self.__height))
         self.__puzzle = Puzzle('images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size)
         self.__start = False
-        self.__hovered = False #button Shuffle state
+        self.__hoveredShuffle = False #button Shuffle state
+        self.__hoveredPause = False #button Mute state
+        self.__hoveredVolumeup = False #button Volup state
+        self.__hoveredVolumedown = False #button Voldown state
+        self.__hoveredHint = False #button Hint state
+        self.__hoveredSolve = False
         pygame.display.set_caption('Puzzle')
 
-    def __create_font(self, font, fontSize, content, color, isBold):
+    def __create_Sysfont(self, font, fontSize, content, color, isBold):
         f = pygame.font.SysFont(font, fontSize, isBold, False)
-        text = f.render(content, False, color)
+        text = f.render(content, True, color)
+        return text
+
+    def __create_Font(self, font, fontSize, content, color):
+        f = pygame.font.Font(font, fontSize)
+        text = f.render(content, True, color)
         return text
 
     def __draw(self):
         # white screen
         surface = self.__screen
-        surface.fill('#8AAAE5')
-        
-        #create text
-        # shuffle_text = self.__create_font(font='Times New Roman', fontSize=30, content='Shuffle', color='#FFFFFF', isBold=False)
-        # self.__shuffle_text_rect = shuffle_text.get_rect(midleft=(650, 350))
-
-        title_text = self.__create_font(font='Times New Roman', fontSize=35, content='PUZZLE', color='#FFFFFF', isBold=True)
-        self.__title_text_rect = title_text.get_rect(center=(self.__width/2, 50))
-
-        music_text = self.__create_font(font='Times New Roman', fontSize=20, content='MUTE', color='#FFFFFF', isBold=False)
-        self.__music_text_rect = music_text.get_rect(midleft=(20, 20))
-
-        volumeup_text = self.__create_font(font='Times New Roman', fontSize=35, content='+', color='#FFFFFF', isBold=True)
-        self.__volumeup_text_rect = volumeup_text.get_rect(midleft=(40, 50))
-        
-        volumedown_text = self.__create_font(font='Times New Roman', fontSize=35, content='-', color='#FFFFFF', isBold=True)
-        self.__volumedown_text_rect = volumedown_text.get_rect(midleft=(20, 50))
-
-        #draw text
-        surface.blit(title_text, self.__title_text_rect)
-        # surface.blit(shuffle_text, self.__shuffle_text_rect)
-        surface.blit(music_text, self.__music_text_rect)
-        surface.blit(volumeup_text, self.__volumeup_text_rect)
-        surface.blit(volumedown_text, self.__volumedown_text_rect)
+        surface.fill(BACKGROUND_COLOR)
         surface.blit(self.__puzzle.image, (20, 100))
-
 
     def __drawPuzzle(self):
         self.__screen.blit(self.__puzzle.image, (20, 100))
-
         imgPieceWidth = self.__imgWidth / 3
         x, y = 20, 100
         for i in range(0, self.__size):
@@ -100,10 +88,31 @@ class Game:
                         self.__currentVolume += 0.1
                         self.__setVolume(self.__currentVolume)
 
-            if self.__shuffle_text_rect.collidepoint(pygame.mouse.get_pos()):
-                self.__hovered = True
-            else:
-                self.__hovered = False
+            for self.__rect in self.__rect_list:
+                if self.__shuffle_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    self.__hoveredShuffle = True
+                else:
+                    self.__hoveredShuffle = False
+                if self.__hint_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    self.__hoveredHint = True
+                else:
+                    self.__hoveredHint = False
+                if self.__music_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    self.__hoveredPause = True
+                else:
+                    self.__hoveredPause = False
+                if self.__volumeup_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    self.__hoveredVolumeup = True
+                else:
+                    self.__hoveredVolumeup = False
+                if self.__volumedown_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    self.__hoveredVolumedown = True
+                else:
+                    self.__hoveredVolumedown = False
+                if self.__solve_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    self.__hoveredSolve = True
+                else:
+                    self.__hoveredSolve = False
     
     def __playBackgroundMusic(self):
         pygame.mixer.music.load("sounds/bgmusic1.mp3")
@@ -114,24 +123,56 @@ class Game:
     def __setVolume(self, vol):
         pygame.mixer.music.set_volume(vol)
 
+    def __updateButtonsState(self):
+        surface = self.__screen
+        title_text = self.__create_Font(font='fonts/PermanentMarker-Regular.ttf', fontSize=40, content='PUZZLE', color='#FFFFFF')
+        self.__title_text_rect = title_text.get_rect(center=(self.__width/2, 50))
+
+        music_text = self.__create_Font(font=TEXT_FONT, fontSize=30, content='Pause', color=self.__get_color(self.__hoveredPause))
+        self.__music_text_rect = music_text.get_rect(midleft=(20, 25))
+
+        
+
+        volumeup_text = self.__create_Sysfont(font='Times New Roman', fontSize=35, content='+', color=self.__get_color(self.__hoveredVolumeup), isBold=True)
+        self.__volumeup_text_rect = volumeup_text.get_rect(midleft=(45, 50))
+        
+        volumedown_text = self.__create_Sysfont(font='Times New Roman', fontSize=35, content='-', color=self.__get_color(self.__hoveredVolumedown), isBold=True)
+        self.__volumedown_text_rect = volumedown_text.get_rect(midleft=(20, 48))
+
+
+        shuffle_text = self.__create_Font(font=TEXT_FONT, fontSize=40, content='Shuffle', color=self.__get_color(self.__hoveredShuffle))
+        self.__shuffle_text_rect = shuffle_text.get_rect(midleft=(625, 350))
+
+        hint_text = self.__create_Font(font=TEXT_FONT, fontSize=40, content='Hint', color=self.__get_color(self.__hoveredHint))
+        self.__hint_text_rect = hint_text.get_rect(midleft=(625, 400))
+
+        solve_text = self.__create_Font(font=TEXT_FONT, fontSize=40, content='Solve', color=self.__get_color(self.__hoveredSolve))
+        self.__solve_text_rect = solve_text.get_rect(midleft=(625, 450))     
+
+        self.__rect_list = [self.__music_text_rect, self.__hint_text_rect, self.__volumedown_text_rect, self.__volumeup_text_rect, self.__shuffle_text_rect]
+        
+        #draw text
+        surface.blit(title_text, self.__title_text_rect)
+        surface.blit(music_text, self.__music_text_rect)
+        surface.blit(hint_text, self.__hint_text_rect)
+        surface.blit(volumeup_text, self.__volumeup_text_rect)
+        surface.blit(shuffle_text, self.__shuffle_text_rect)
+        surface.blit(volumedown_text, self.__volumedown_text_rect)
+        surface.blit(solve_text, self.__solve_text_rect)
+
     def game_loop(self):
         self.__playBackgroundMusic()
         self.__draw()
         while True:
-            self.__shuffleButtonUpdate()
+            self.__updateButtonsState()
             self.__update()
             pygame.display.update()
             pygame.time.Clock().tick(60)
 
-    def __shuffleButtonUpdate(self):
-        shuffle_text = self.__create_font(font='Times New Roman', fontSize=30, content='Shuffle', color=self.__get_color(), isBold=False)
-        self.__shuffle_text_rect = shuffle_text.get_rect(midleft=(650, 350))        
-        self.__screen.blit(shuffle_text, self.__shuffle_text_rect)
-
-    def __get_color(self):
-        if self.__hovered:
-            return (250, 250, 250)
+    def __get_color(self, state):
+        if state:
+            return (250, 250, 250) #hovered
         else:
-            return (219, 213, 213)
+            return (230, 230, 230) #mouse leave
 
     
