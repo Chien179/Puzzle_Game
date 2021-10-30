@@ -22,6 +22,18 @@ def drawRect(image, imgPieceWidth, color=(0, 0, 0)):
     pygame.draw.rect(image, color, pygame.Rect(0, 0, imgPieceWidth, imgPieceWidth), 1)
 
 
+def buttonLeft(text):
+    text.set_color_hovered((250, 250, 250))
+    pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+    text.update()
+
+
+def buttonHover(text):
+    text.set_color_hovered((230, 230, 230))
+    pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+    text.update()
+
+
 class Game:
 
     def __init__(self, width, height, imgWidth, imgHeight, size):
@@ -53,11 +65,11 @@ class Game:
     def __drawText(self):
         self.__title_text_rect = self.__title_text.text.get_rect(center=(self.__width / 2, 50))
         self.__music_text_rect = self.__music_text.text.get_rect(midleft=(20, 25))
-        self.__volumeup_text_rect = self.__volumeup_text.text.get_rect(midleft=(45, 50))
-        self.__volumedown_text_rect = self.__volumedown_text.text.get_rect(midleft=(20, 48))
+        self.__volumeup_text_rect = self.__volumeup_text.text.get_rect(midleft=(45, 55))
+        self.__volumedown_text_rect = self.__volumedown_text.text.get_rect(midleft=(20, 53))
         self.__shuffle_text_rect = self.__shuffle_text.text.get_rect(midleft=(625, 350))
-        self.__hint_text_rect = self.__hint_text.text.get_rect(midleft=(625, 400))
-        self.__solve_text_rect = self.__solve_text.text.get_rect(midleft=(625, 450))
+        self.__hint_text_rect = self.__hint_text.text.get_rect(midleft=(625, 410))
+        self.__solve_text_rect = self.__solve_text.text.get_rect(midleft=(625, 470))
 
         self.__rect_list = {self.__music_text: self.__music_text_rect,
                             self.__hint_text: self.__hint_text_rect,
@@ -78,7 +90,7 @@ class Game:
 
     def __drawPuzzle(self):
         self.__screen.blit(self.__puzzle.image, (20, 100))
-        imgPieceWidth = self.__imgWidth / 3
+        imgPieceWidth = self.__imgWidth / self.__size
         x, y = 20, 100
         for i in range(0, self.__size):
             imgTemp = []
@@ -93,7 +105,7 @@ class Game:
             self.__puzzle.imgRect.append(imgTemp)
 
     def __drawHint(self, nextNode):
-        imgPieceWidth = self.__imgWidth / 3
+        imgPieceWidth = self.__imgWidth / self.__size
         x, y = 20, 100
         for i in range(0, self.__size):
             imgTemp = []
@@ -135,17 +147,6 @@ class Game:
         nextNode = getIndexMatrix(result[1], self.__size)
         self.__drawHint(nextNode)
 
-    def __buttonHover(self, mousePos):
-        for text, rect in self.__rect_list.items():
-            if rect.collidepoint(mousePos):
-                text.set_color_hovered((230, 230, 230))
-                pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
-                break
-            else:
-                text.set_color_left((250, 250, 250))
-                pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
-            text.update()
-
     def __volumeSetting(self, mousePos):
         if self.__music_text_rect.collidepoint(mousePos):
             if pygame.mixer.music.get_busy():  # if music is played
@@ -185,9 +186,9 @@ class Game:
                     self.__drawPuzzle()
 
     def __hoverPuzzleArea(self, mousePos):
-        imgPieceWidth = self.__imgWidth / 3
+        self.__screen.blit(self.__puzzle.image, (20, 100))
+        imgPieceWidth = self.__imgWidth / self.__size
         x, y = 20, 100
-        puzzle = self.__puzzle.imgPieces.copy()
         for i in range(0, self.__size):
             for j in range(0, self.__size):
                 if self.__puzzle.imgRect[i][j].collidepoint(mousePos):
@@ -201,8 +202,28 @@ class Game:
                     x = 20
                     y += imgPieceWidth
 
+    def __hover(self, mousePos):
+        if self.__music_text_rect.collidepoint(mousePos):
+            buttonHover(self.__music_text)
+        elif self.__volumeup_text_rect.collidepoint(mousePos):
+            buttonHover(self.__volumeup_text)
+        elif self.__volumedown_text_rect.collidepoint(mousePos):
+            buttonHover(self.__volumedown_text)
+        elif self.__shuffle_text_rect.collidepoint(mousePos):
+            buttonHover(self.__shuffle_text)
+        elif self.__solve_text_rect.collidepoint(mousePos):
+            buttonHover(self.__solve_text)
+        elif self.__hint_text_rect.collidepoint(mousePos):
+            buttonHover(self.__hint_text)
+        elif self.__puzzleRect.collidepoint(mousePos):
+            pygame.mouse.set_cursor(pygame.cursors.diamond)
+        else:
+            for text in self.__rect_list.keys():
+                buttonLeft(text)
+
     def __update(self):
         self.__drawText()
+        self.__puzzleRect = pygame.draw.rect(self.__screen,(0,0,0), pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
 
         mousePos = pygame.mouse.get_pos()
         for event in pygame.event.get():
@@ -216,7 +237,8 @@ class Game:
                     self.__controlPuzzle(mousePos)
                     self.__solveAndHint(mousePos)
                 self.__volumeSetting(mousePos)
-        self.__buttonHover(mousePos)
+
+        self.__hover(mousePos)
 
         if self.__start:
             self.__hoverPuzzleArea(mousePos)
