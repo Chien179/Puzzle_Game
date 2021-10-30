@@ -24,7 +24,7 @@ class Puzzle:
             for j in range(0, self.__size):
                 imgTemp.append(self.image.subsurface(x, y, self.__width / self.__size, self.__height / self.__size).convert_alpha())
                 x += self.__width / self.__size
-                if j == 2:
+                if j == self.__size - 1:
                     x = 0
                     y += self.__height / self.__size
             self.imgPieces.append(imgTemp)
@@ -32,7 +32,7 @@ class Puzzle:
         blank = pygame.Surface((self.__width / self.__size, self.__height / self.__size))
         blank = blank.convert_alpha()
         blank.fill('black')
-        blank.set_alpha(220)
+        blank.set_alpha(200)
         self.imgPieces[self.__size - 1][self.__size - 1] = blank
 
     def shuffle(self):
@@ -45,25 +45,25 @@ class Puzzle:
         while n % 2 != 0:
             random.shuffle(num)
             n = self.__check_state(num)
-        self.imgNum = numpy.reshape(num, (3, 3)).tolist()
+        self.imgNum = numpy.reshape(num, (self.__size, self.__size)).tolist()
 
-        for i in range(0, 3):
-            for j in range(0, 3):
-                row = int((self.imgNum[i][j] - 1) / 3)
-                col = int((self.imgNum[i][j] - 1) % 3)
+        for i in range(0, self.__size):
+            for j in range(0, self.__size):
+                row = int((self.imgNum[i][j] - 1) / self.__size)
+                col = int((self.imgNum[i][j] - 1) % self.__size)
                 self.imgPieces[i][j] = imgTemp[row][col]
 
     def control(self, numPieceX, numPieceY):
         if numPieceX > 0:
             if self.imgNum[numPieceX - 1][numPieceY] == self.__size ** 2:
                 self.swap_row(numPieceX, numPieceX - 1, numPieceY)
-        if numPieceX < 3 - 1:
+        if numPieceX < self.__size - 1:
             if self.imgNum[numPieceX + 1][numPieceY] == self.__size ** 2:
                 self.swap_row(numPieceX, numPieceX + 1, numPieceY)
         if numPieceY > 0:
             if self.imgNum[numPieceX][numPieceY - 1] == self.__size ** 2:
                 self.swap_col(numPieceX, numPieceY, numPieceY - 1)
-        if numPieceY < 3 - 1:
+        if numPieceY < self.__size - 1:
             if self.imgNum[numPieceX][numPieceY + 1] == self.__size ** 2:
                 self.swap_col(numPieceX, numPieceY, numPieceY + 1)
 
