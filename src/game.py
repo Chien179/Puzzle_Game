@@ -3,10 +3,12 @@ from pygame.time import delay
 from puzzle import Puzzle
 from button import Button
 from algorithm import AStar
+from toolbar import Toolbar
 
 TEXT_FONT = 'fonts/OdibeeSans-Regular.ttf'
 BACKGROUND_COLOR = '#A2C6F0'
-
+GAME_ICON = 'icons/puzzle.png'
+# TRANSPARENT = (0, 0, 0, 0)
 
 def getIndexMatrix(matrix, size):
     for i in range(size):
@@ -45,9 +47,8 @@ class Game:
         self.__puzzle = Puzzle('images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size)
         self.__start = False
         self.__title_text = Button(font=TEXT_FONT, fontSize=40, content='PUZZLE', color='#FFFFFF')
-        self.__music_text = Button(font=TEXT_FONT, fontSize=30, content='Pause', color='#FFFFFF')
         self.__volumeup_text = Button(font='Times New Roman', fontSize=35, content='+', color='#FFFFFF',
-                                      isBold=False, isSys=True)
+                                    isBold=False, isSys=True)
         self.__volumedown_text = Button(font='Times New Roman', fontSize=35, content='-', color='#FFFFFF',
                                         isBold=False, isSys=True)
         self.__shuffle_text = Button(font=TEXT_FONT, fontSize=40, content='Shuffle', color='#FFFFFF')
@@ -55,23 +56,38 @@ class Game:
         self.__solve_text = Button(font=TEXT_FONT, fontSize=40, content='Solve', color='#FFFFFF')
         pygame.display.set_caption('Puzzle')
         self.__checkHint = False
+        gameIcon = pygame.image.load(GAME_ICON)
+        pygame.display.set_icon(gameIcon)
+        self.__toolBar = Toolbar(800, 28)
+        self.__musicPlaying = False
+        self.__playImg = pygame.image.load('icons/play.png')
+        self.__playImg = pygame.transform.scale(self.__playImg, (32, 32))
+        self.__pauseImg = pygame.image.load('icons/pause.png')
+        self.__pauseImg = pygame.transform.scale(self.__pauseImg, (25, 25))
+        self.__playImg_rect = self.__playImg.get_rect(midleft=(51, 60))
+        self.__pauseImg_rect = self.__pauseImg.get_rect(midleft=(50, 60))
+
 
     def __draw(self):
         # white screen
         surface = self.__screen
         surface.fill(BACKGROUND_COLOR)
         surface.blit(self.__puzzle.image, (20, 100))
+        surface.blit(self.__pauseImg ,self.__pauseImg_rect)
 
     def __drawText(self):
-        self.__title_text_rect = self.__title_text.text.get_rect(center=(self.__width / 2, 50))
-        self.__music_text_rect = self.__music_text.text.get_rect(midleft=(20, 25))
-        self.__volumeup_text_rect = self.__volumeup_text.text.get_rect(midleft=(45, 55))
-        self.__volumedown_text_rect = self.__volumedown_text.text.get_rect(midleft=(20, 53))
+        #text:
+        self.__title_text_rect = self.__title_text.text.get_rect(center=(self.__width / 2, 60))
+        self.__volumeup_text_rect = self.__volumeup_text.text.get_rect(midleft=(85, 60))
+        self.__volumedown_text_rect = self.__volumedown_text.text.get_rect(midleft=(30, 57))
         self.__shuffle_text_rect = self.__shuffle_text.text.get_rect(midleft=(625, 350))
         self.__hint_text_rect = self.__hint_text.text.get_rect(midleft=(625, 410))
         self.__solve_text_rect = self.__solve_text.text.get_rect(midleft=(625, 470))
 
-        self.__rect_list = {self.__music_text: self.__music_text_rect,
+        #image:
+        
+
+        self.__rect_list = {
                             self.__hint_text: self.__hint_text_rect,
                             self.__volumedown_text: self.__volumedown_text_rect,
                             self.__volumeup_text: self.__volumeup_text_rect,
@@ -79,9 +95,7 @@ class Game:
                             self.__solve_text: self.__solve_text_rect}
 
         surface = self.__screen
-        # draw text
         surface.blit(self.__title_text.text, self.__title_text_rect)
-        surface.blit(self.__music_text.text, self.__music_text_rect)
         surface.blit(self.__hint_text.text, self.__hint_text_rect)
         surface.blit(self.__volumeup_text.text, self.__volumeup_text_rect)
         surface.blit(self.__shuffle_text.text, self.__shuffle_text_rect)
@@ -147,12 +161,25 @@ class Game:
         nextNode = getIndexMatrix(result[1], self.__size)
         self.__drawHint(nextNode)
 
+    def __drawMusicIcon(self, musicPlaying):
+        if musicPlaying:
+            self.__screen.blit(self.__pauseImg, self.__pauseImg_rect)
+        else:
+            self.__screen.blit(self.__playImg, self.__playImg_rect)
+
     def __volumeSetting(self, mousePos):
-        if self.__music_text_rect.collidepoint(mousePos):
+        # if self.__musicPause_text_rect.collidepoint(mousePos):
+        if self.__pauseImg_rect.collidepoint(mousePos):
             if pygame.mixer.music.get_busy():  # if music is played
+                # self.__draw()
                 pygame.mixer.music.pause()
+                self.__musicPlaying = False
+                self.__drawMusicIcon(self.__musicPlaying)
             else:
+                self.__draw()
                 pygame.mixer.music.unpause()
+                self.__musicPlaying = True
+                self.__drawMusicIcon(self.__musicPlaying)
 
         if self.__volumedown_text_rect.collidepoint(mousePos):
             if self.__currentVolume > 0:
@@ -203,9 +230,7 @@ class Game:
                     y += imgPieceWidth
 
     def __hover(self, mousePos):
-        if self.__music_text_rect.collidepoint(mousePos):
-            buttonHover(self.__music_text)
-        elif self.__volumeup_text_rect.collidepoint(mousePos):
+        if self.__volumeup_text_rect.collidepoint(mousePos):
             buttonHover(self.__volumeup_text)
         elif self.__volumedown_text_rect.collidepoint(mousePos):
             buttonHover(self.__volumedown_text)
@@ -223,6 +248,7 @@ class Game:
 
     def __update(self):
         self.__drawText()
+        self.__toolBar.draw(self.__screen)
         self.__puzzleRect = pygame.draw.rect(self.__screen,(0,0,0), pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
 
         mousePos = pygame.mouse.get_pos()
@@ -237,11 +263,13 @@ class Game:
                     self.__controlPuzzle(mousePos)
                     self.__solveAndHint(mousePos)
                 self.__volumeSetting(mousePos)
+                # self.__toolBar.update(mousePos) #update toolbar
 
         self.__hover(mousePos)
-
+        self.__toolBar.toolBarHover(mousePos)
         if self.__start:
             self.__hoverPuzzleArea(mousePos)
+
 
     def game_loop(self):
         self.__playBackgroundMusic()
