@@ -4,13 +4,14 @@ import pygame
 
 
 class Puzzle:
-    def __init__(self, image, width, height, size):
+    def __init__(self, image, width, height, size, goal):
         self.image = pygame.image.load(image).convert_alpha()
         self.imgPieces, self.imgRect = [], []
         self.__width, self.__height = width, height
         self.__size = size
         self.imgNum = []
         self.__createPuzzle()
+        self.__goal = goal
 
     def __createPuzzle(self):
         if self.image.get_width() > self.__width and self.image.get_height() > self.__height:
@@ -68,24 +69,26 @@ class Puzzle:
                 self.swap_col(numPieceX, numPieceY, numPieceY + 1)
 
     def swap_row(self, row, rowb, col):
-        imgtemp = self.imgPieces[row][col]
+        imgTemp = self.imgPieces[row][col]
         self.imgPieces[row][col] = self.imgPieces[rowb][col]
-        self.imgPieces[rowb][col] = imgtemp
-        numtemp = self.imgNum[row][col]
+        self.imgPieces[rowb][col] = imgTemp
+        numTemp = self.imgNum[row][col]
         self.imgNum[row][col] = self.imgNum[rowb][col]
-        self.imgNum[rowb][col] = numtemp
+        self.imgNum[rowb][col] = numTemp
 
     def swap_col(self, row, col, colb):
-        imgtemp = self.imgPieces[row][col]
+        imgTemp = self.imgPieces[row][col]
         self.imgPieces[row][col] = self.imgPieces[row][colb]
-        self.imgPieces[row][colb] = imgtemp
-        numtemp = self.imgNum[row][col]
+        self.imgPieces[row][colb] = imgTemp
+        numTemp = self.imgNum[row][col]
         self.imgNum[row][col] = self.imgNum[row][colb]
-        self.imgNum[row][colb] = numtemp
+        self.imgNum[row][colb] = numTemp
 
     def displayImage(self):
         return pygame.image.load(self.image).convert_alpha()
 
+    def win(self):
+        return self.imgNum == self.__goal
 
     def __check_state(self, num):
         n = 0

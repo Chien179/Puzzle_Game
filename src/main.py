@@ -9,4 +9,4 @@ SIZE = 3
 
 if __name__ == '__main__':
     game = Game(WIDTH, HEIGHT, IMGWIDTH, IMGHEIGHT, SIZE)
-    game.game_loop()
+    game.startGame()

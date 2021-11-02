@@ -26,13 +26,12 @@ def getBestNode(openSet):
 
 
 class AStar:
-    def __init__(self, puzzle, size):
+    def __init__(self, puzzle, size, goal):
         self.__open_set = {}
         self.__closed_set = {}
         self.__size = size
         self.__puzzle = puzzle
-        end = [i for i in range(1, self.__size**2 + 1)]
-        self.__goal = numpy.reshape(end, (self.__size, self.__size)).tolist()
+        self.__goal = goal
 
     #main function of node
     def solve(self):

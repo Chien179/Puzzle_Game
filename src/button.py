@@ -21,6 +21,7 @@ class Button:
     def __create_Font(self):
         f = pygame.font.Font(self.__font, self.__fontSize)
         text = f.render(self.__content, True, self.__color)
+
         return text
 
     def set_color_hovered(self, color):
