@@ -1,7 +1,7 @@
 import pygame
 from text import Text
 
-TEXT_FONT = 'fonts/OdibeeSans-Regular.ttf'
+TEXT_FONT = '../fonts/OdibeeSans-Regular.ttf'
 
 class Messagebox:
     def __init__(self, surface):

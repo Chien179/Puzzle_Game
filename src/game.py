@@ -5,9 +5,11 @@ from puzzle import Puzzle
 from text import Text
 from algorithm import AStar
 from messagebox import Messagebox
+from toolbar import Toolbar
 
-TEXT_FONT = 'fonts/OdibeeSans-Regular.ttf'
+TEXT_FONT = '../fonts/OdibeeSans-Regular.ttf'
 BACKGROUND_COLOR = '#A2C6F0'
+GAME_ICON = '../icons/puzzle.png'
 
 class Game:
 
@@ -19,7 +21,7 @@ class Game:
         self.__screen = pygame.display.set_mode((self.__width, self.__height))
         end = [i for i in range(1, self.__size ** 2 + 1)]
         self.__goal = numpy.reshape(end, (self.__size, self.__size)).tolist()
-        self.__puzzle = Puzzle('images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
+        self.__puzzle = Puzzle('../images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
         self.__start = False
         self.__checkHint = False
         self.__title_text = Text(font=TEXT_FONT, fontSize=40, content='PUZZLE', color='#FFFFFF')
@@ -40,13 +42,11 @@ class Game:
         gameIcon = pygame.image.load(GAME_ICON)
         pygame.display.set_icon(gameIcon)
         self.__toolBar = Toolbar(800, 28)
-        self.__musicPlaying = False
-        self.__playImg = pygame.image.load('icons/play.png')
+        self.__musicPlaying = True
+        self.__playImg = pygame.image.load('../icons/play.png')
         self.__playImg = pygame.transform.scale(self.__playImg, (32, 32))
-        self.__pauseImg = pygame.image.load('icons/pause.png')
+        self.__pauseImg = pygame.image.load('../icons/pause.png')
         self.__pauseImg = pygame.transform.scale(self.__pauseImg, (25, 25))
-        self.__playImg_rect = self.__playImg.get_rect(midleft=(51, 60))
-        self.__pauseImg_rect = self.__pauseImg.get_rect(midleft=(50, 60))
 
 
     def __draw(self):
@@ -57,6 +57,8 @@ class Game:
 
     def __drawText(self):
         #text:
+        self.__playImg_rect = self.__playImg.get_rect(midleft=(51, 60))
+        self.__pauseImg_rect = self.__pauseImg.get_rect(midleft=(50, 60))
         self.__title_text_rect = self.__title_text.text.get_rect(center=(self.__width / 2, 60))
         self.__volumeup_text_rect = self.__volumeup_text.text.get_rect(midleft=(85, 60))
         self.__volumedown_text_rect = self.__volumedown_text.text.get_rect(midleft=(30, 57))
@@ -78,6 +80,7 @@ class Game:
         surface.blit(self.__shuffle_text.text, self.__shuffle_text_rect)
         surface.blit(self.__volumedown_text.text, self.__volumedown_text_rect)
         surface.blit(self.__solve_text.text, self.__solve_text_rect)
+        self.__drawMusicIcon()
 
     def __setPuzzle(self):
         self.__screen.blit(self.__puzzle.image, (20, 100))
@@ -112,7 +115,7 @@ class Game:
                     y += imgPieceWidth
 
     def __playBackgroundMusic(self):
-        pygame.mixer.music.load("sounds/bgmusic1.mp3")
+        pygame.mixer.music.load("../sounds/bgmusic1.mp3")
         pygame.mixer.music.play(loops=0, start=0.0)
         pygame.mixer.music.set_volume(0.2)
         self.__currentVolume = pygame.mixer.music.get_volume()
@@ -132,7 +135,7 @@ class Game:
             self.__animationPuzzle(current, nextNode)
             self.__setPuzzle()
             pygame.display.update()
-            delay(100)
+            delay(200)
 
     def __hint(self):
         self.__checkHint = True
@@ -141,8 +144,8 @@ class Game:
         nextNode = self.__getIndexMatrix(result[1], self.__size)
         self.__drawHint(nextNode)
 
-    def __drawMusicIcon(self, musicPlaying):
-        if musicPlaying:
+    def __drawMusicIcon(self):
+        if self.__musicPlaying:
             self.__screen.blit(self.__pauseImg, self.__pauseImg_rect)
         else:
             self.__screen.blit(self.__playImg, self.__playImg_rect)
@@ -154,12 +157,12 @@ class Game:
                 # self.__draw()
                 pygame.mixer.music.pause()
                 self.__musicPlaying = False
-                self.__drawMusicIcon(self.__musicPlaying)
+                self.__drawMusicIcon()
             else:
                 self.__draw()
                 pygame.mixer.music.unpause()
                 self.__musicPlaying = True
-                self.__drawMusicIcon(self.__musicPlaying)
+                self.__drawMusicIcon()
 
         if self.__volumedown_text_rect.collidepoint(mousePos):
             if self.__currentVolume > 0:
@@ -179,7 +182,7 @@ class Game:
 
     def __shuffle(self):
         self.__puzzle.imgPieces.clear()
-        self.__puzzle = Puzzle('images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
+        self.__puzzle = Puzzle('../images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
         self.__puzzle.shuffle()
         self.__setPuzzle()
         self.__start = True
@@ -208,9 +211,7 @@ class Game:
                     y += imgPieceWidth
 
     def __hoverButton(self, mousePos):
-        if self.__music_text_rect.collidepoint(mousePos):
-            self.__buttonHover(self.__music_text)
-        elif self.__volumeup_text_rect.collidepoint(mousePos):
+        if self.__volumeup_text_rect.collidepoint(mousePos):
             self.__buttonHover(self.__volumeup_text)
         elif self.__volumedown_text_rect.collidepoint(mousePos):
             self.__buttonHover(self.__volumedown_text)
@@ -238,13 +239,11 @@ class Game:
             self.__checkHint = False
             self.__start = False
             self.__mess.create()
-            # self.__draw()
-            # self.__drawText()
 
     def __update(self):
         self.__drawText()
         self.__toolBar.draw(self.__screen)
-        self.__puzzleRect = pygame.draw.rect(self.__screen,(0,0,0), pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
+        self.__puzzleRect = pygame.draw.rect(self.__screen,'#CEACA3', pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
 
         mousePos = pygame.mouse.get_pos()
         for event in pygame.event.get():
@@ -271,6 +270,7 @@ class Game:
         self.__hoverButton(mousePos)
 
         self.__winState()
+        self.__toolBar.toolBarHover(mousePos)
         if self.__start:
             self.__hoverPuzzleArea(mousePos)
 
