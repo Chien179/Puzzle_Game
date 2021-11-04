@@ -2,7 +2,7 @@ import pygame
 import numpy
 from pygame.time import delay
 from puzzle import Puzzle
-from button import Button
+from text import Text
 from algorithm import AStar
 from messagebox import Messagebox
 
@@ -16,22 +16,25 @@ class Game:
         self.__width, self.__height = width, height
         self.__imgWidth, self.__imgHeight = imgWidth, imgHeight
         self.__size = size
-        self.__screen = pygame.display.set_mode((self.__width,self.__height))
+        self.__screen = pygame.display.set_mode((self.__width, self.__height))
         end = [i for i in range(1, self.__size ** 2 + 1)]
         self.__goal = numpy.reshape(end, (self.__size, self.__size)).tolist()
         self.__puzzle = Puzzle('images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
         self.__start = False
         self.__checkHint = False
-        self.__title_text = Button(font=TEXT_FONT, fontSize=40, content='PUZZLE', color='#FFFFFF')
-        self.__music_text = Button(font=TEXT_FONT, fontSize=30, content='Pause', color='#FFFFFF')
-        self.__volumeup_text = Button(font='Times New Roman', fontSize=35, content='+', color='#FFFFFF',
+        self.__title_text = Text(font=TEXT_FONT, fontSize=40, content='PUZZLE', color='#FFFFFF')
+        self.__music_text = Text(font=TEXT_FONT, fontSize=30, content='Pause', color='#FFFFFF')
+        self.__volumeup_text = Text(font='Times New Roman', fontSize=35, content='+', color='#FFFFFF',
                                       isBold=False, isSys=True)
-        self.__volumedown_text = Button(font='Times New Roman', fontSize=35, content='-', color='#FFFFFF',
+        self.__volumedown_text = Text(font='Times New Roman', fontSize=35, content='-', color='#FFFFFF',
                                         isBold=False, isSys=True)
-        self.__shuffle_text = Button(font=TEXT_FONT, fontSize=40, content='Shuffle', color='#FFFFFF')
-        self.__hint_text = Button(font=TEXT_FONT, fontSize=40, content='Hint', color='#FFFFFF')
-        self.__solve_text = Button(font=TEXT_FONT, fontSize=40, content='Solve', color='#FFFFFF')
-        self.__mess = Messagebox()
+        self.__shuffle_text = Text(font=TEXT_FONT, fontSize=40, content='Shuffle', color='#FFFFFF')
+        self.__hint_text = Text(font=TEXT_FONT, fontSize=40, content='Hint', color='#FFFFFF')
+        self.__solve_text = Text(font=TEXT_FONT, fontSize=40, content='Solve', color='#FFFFFF')
+
+        self.__mess = Messagebox(self.__screen)
+        self.__checkMess = False
+
         pygame.display.set_caption('Puzzle')
 
     def __draw(self):
@@ -49,12 +52,12 @@ class Game:
         self.__hint_text_rect = self.__hint_text.text.get_rect(midleft=(625, 410))
         self.__solve_text_rect = self.__solve_text.text.get_rect(midleft=(625, 470))
 
-        self.__rect_list = {self.__music_text: self.__music_text_rect,
-                            self.__hint_text: self.__hint_text_rect,
-                            self.__volumedown_text: self.__volumedown_text_rect,
-                            self.__volumeup_text: self.__volumeup_text_rect,
-                            self.__shuffle_text: self.__shuffle_text_rect,
-                            self.__solve_text: self.__solve_text_rect}
+        self.__rect_list = [self.__hint_text,
+                            self.__shuffle_text,
+                            self.__solve_text,
+                            self.__music_text,
+                            self.__volumedown_text,
+                            self.__volumeup_text]
 
         surface = self.__screen
         # draw text
@@ -181,7 +184,7 @@ class Game:
                     x = 20
                     y += imgPieceWidth
 
-    def __hover(self, mousePos):
+    def __hoverButton(self, mousePos):
         if self.__music_text_rect.collidepoint(mousePos):
             self.__buttonHover(self.__music_text)
         elif self.__volumeup_text_rect.collidepoint(mousePos):
@@ -194,44 +197,61 @@ class Game:
             self.__buttonHover(self.__solve_text)
         elif self.__hint_text_rect.collidepoint(mousePos):
             self.__buttonHover(self.__hint_text)
+        elif self.__mess.playAgain_rect.collidepoint(mousePos) and self.__checkMess:
+                self.__buttonHover(self.__mess.playAgain)
+        elif self.__mess.quit_rect.collidepoint(mousePos) and self.__checkMess:
+            self.__buttonHover(self.__mess.quit)
         elif self.__puzzleRect.collidepoint(mousePos) and self.__start:
             pygame.mouse.set_cursor(pygame.cursors.diamond)
         else:
-            for text in self.__rect_list.keys():
+            for text in self.__rect_list:
                 self.__buttonLeft(text)
+            self.__buttonLeft(self.__mess.playAgain)
+            self.__buttonLeft(self.__mess.quit)
 
     def __winState(self):
-        if self.__puzzle.win():
+        if self.__puzzle.win() and self.__start:
+            self.__checkMess = True
             self.__checkHint = False
             self.__start = False
-            self.__draw()
-            self.__drawText()
-            self.__mess.messageWindow()
-            self.__game_loop()
-
+            self.__mess.create()
+            # self.__draw()
+            # self.__drawText()
 
     def __update(self):
         self.__drawText()
-        self.__puzzleRect = pygame.draw.rect(self.__screen,(0,0,0), pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
+        self.__puzzleRect = pygame.draw.rect(self.__screen,'#CEACA3', pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
 
         mousePos = pygame.mouse.get_pos()
-        if self.__start:
-            self.__winState()
-            self.__hoverPuzzleArea(mousePos)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                print('quit')
                 pygame.quit()
                 exit()
             if event.type == pygame.MOUSEBUTTONUP:
-                if self.__shuffle_text_rect.collidepoint(mousePos):
-                    self.__shuffle()
-                elif self.__start:
-                    self.__solveAndHint(mousePos)
-                    self.__controlPuzzle(mousePos)
-                    # self.__setPuzzle()
+                if self.__checkMess:
+                    if self.__mess.quit_rect.collidepoint(mousePos):
+                        pygame.quit()
+                        exit()
+                    if self.__mess.playAgain_rect.collidepoint(mousePos):
+                        self.__checkMess = False
+                        self.__draw()
+                        self.__drawText()
+                        self.__game_loop()
+                else:
+                    if self.__shuffle_text_rect.collidepoint(mousePos):
+                        self.__shuffle()
+                    elif self.__start:
+                        self.__solveAndHint(mousePos)
+                        self.__controlPuzzle(mousePos)
                 self.__volumeSetting(mousePos)
-        self.__hover(mousePos)
+        self.__hoverButton(mousePos)
+
+        self.__winState()
+        if self.__start:
+            self.__hoverPuzzleArea(mousePos)
+        # if self.__checkMess:
+        #     self.__draw()
+        #     self.__drawText()
 
     def __game_loop(self):
         while True:
