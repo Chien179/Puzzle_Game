@@ -1,7 +1,7 @@
 import pygame
 from text import Text
 
-class Toolbar():
+class Toolbar:
     def __init__(self, font, width, height): #And other customisation options
         self.image = pygame.Surface((width, height))
         self.image.fill("#CEACA3")
@@ -14,6 +14,5 @@ class Toolbar():
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
-
         screen.blit(self.fileButton.text, self.fileButton_rect)
         screen.blit(self.aboutButton.text, self.aboutButton_rect)

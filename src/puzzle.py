@@ -87,7 +87,7 @@ class Puzzle:
         self.imgNum[row][colb] = numTemp
 
     def displayImage(self):
-        return pygame.image.load(self.image).convert_alpha()
+        return self.image
 
     def win(self):
         return self.imgNum == self.__goal
