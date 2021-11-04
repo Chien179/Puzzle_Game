@@ -36,6 +36,18 @@ class Game:
         self.__checkMess = False
 
         pygame.display.set_caption('Puzzle')
+        self.__checkHint = False
+        gameIcon = pygame.image.load(GAME_ICON)
+        pygame.display.set_icon(gameIcon)
+        self.__toolBar = Toolbar(800, 28)
+        self.__musicPlaying = False
+        self.__playImg = pygame.image.load('icons/play.png')
+        self.__playImg = pygame.transform.scale(self.__playImg, (32, 32))
+        self.__pauseImg = pygame.image.load('icons/pause.png')
+        self.__pauseImg = pygame.transform.scale(self.__pauseImg, (25, 25))
+        self.__playImg_rect = self.__playImg.get_rect(midleft=(51, 60))
+        self.__pauseImg_rect = self.__pauseImg.get_rect(midleft=(50, 60))
+
 
     def __draw(self):
         # white screen
@@ -44,10 +56,10 @@ class Game:
         surface.blit(self.__puzzle.image, (20, 100))
 
     def __drawText(self):
-        self.__title_text_rect = self.__title_text.text.get_rect(center=(self.__width / 2, 50))
-        self.__music_text_rect = self.__music_text.text.get_rect(midleft=(20, 25))
-        self.__volumeup_text_rect = self.__volumeup_text.text.get_rect(midleft=(45, 55))
-        self.__volumedown_text_rect = self.__volumedown_text.text.get_rect(midleft=(20, 53))
+        #text:
+        self.__title_text_rect = self.__title_text.text.get_rect(center=(self.__width / 2, 60))
+        self.__volumeup_text_rect = self.__volumeup_text.text.get_rect(midleft=(85, 60))
+        self.__volumedown_text_rect = self.__volumedown_text.text.get_rect(midleft=(30, 57))
         self.__shuffle_text_rect = self.__shuffle_text.text.get_rect(midleft=(625, 350))
         self.__hint_text_rect = self.__hint_text.text.get_rect(midleft=(625, 410))
         self.__solve_text_rect = self.__solve_text.text.get_rect(midleft=(625, 470))
@@ -60,9 +72,7 @@ class Game:
                             self.__volumeup_text]
 
         surface = self.__screen
-        # draw text
         surface.blit(self.__title_text.text, self.__title_text_rect)
-        surface.blit(self.__music_text.text, self.__music_text_rect)
         surface.blit(self.__hint_text.text, self.__hint_text_rect)
         surface.blit(self.__volumeup_text.text, self.__volumeup_text_rect)
         surface.blit(self.__shuffle_text.text, self.__shuffle_text_rect)
@@ -131,12 +141,25 @@ class Game:
         nextNode = self.__getIndexMatrix(result[1], self.__size)
         self.__drawHint(nextNode)
 
+    def __drawMusicIcon(self, musicPlaying):
+        if musicPlaying:
+            self.__screen.blit(self.__pauseImg, self.__pauseImg_rect)
+        else:
+            self.__screen.blit(self.__playImg, self.__playImg_rect)
+
     def __volumeSetting(self, mousePos):
-        if self.__music_text_rect.collidepoint(mousePos):
+        # if self.__musicPause_text_rect.collidepoint(mousePos):
+        if self.__pauseImg_rect.collidepoint(mousePos):
             if pygame.mixer.music.get_busy():  # if music is played
+                # self.__draw()
                 pygame.mixer.music.pause()
+                self.__musicPlaying = False
+                self.__drawMusicIcon(self.__musicPlaying)
             else:
+                self.__draw()
                 pygame.mixer.music.unpause()
+                self.__musicPlaying = True
+                self.__drawMusicIcon(self.__musicPlaying)
 
         if self.__volumedown_text_rect.collidepoint(mousePos):
             if self.__currentVolume > 0:
@@ -220,7 +243,8 @@ class Game:
 
     def __update(self):
         self.__drawText()
-        self.__puzzleRect = pygame.draw.rect(self.__screen,'#CEACA3', pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
+        self.__toolBar.draw(self.__screen)
+        self.__puzzleRect = pygame.draw.rect(self.__screen,(0,0,0), pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
 
         mousePos = pygame.mouse.get_pos()
         for event in pygame.event.get():
@@ -249,9 +273,6 @@ class Game:
         self.__winState()
         if self.__start:
             self.__hoverPuzzleArea(mousePos)
-        # if self.__checkMess:
-        #     self.__draw()
-        #     self.__drawText()
 
     def __game_loop(self):
         while True:
