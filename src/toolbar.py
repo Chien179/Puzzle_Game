@@ -1,6 +1,6 @@
 import pygame
 
-from button import Button
+from text import Text
 
 class Toolbar():
     def __init__(self, width, height): #And other customisation options
@@ -30,9 +30,9 @@ class Toolbar():
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
-        self.__fileButton = Button(font='fonts/OdibeeSans-Regular.ttf', fontSize=20, content='File', color=self.__getColor(self.__fileHover))
-        self.__aboutButton = Button(font='fonts/OdibeeSans-Regular.ttf', fontSize=20, content='About', color=self.__getColor(self.__aboutHover))
-        self.__helpButton = Button(font='fonts/OdibeeSans-Regular.ttf', fontSize=20, content='Help', color=self.__getColor(self.__helpHover))
+        self.__fileButton = Text(font='../fonts/OdibeeSans-Regular.ttf', fontSize=20, content='File', color=self.__getColor(self.__fileHover))
+        self.__aboutButton = Text(font='../fonts/OdibeeSans-Regular.ttf', fontSize=20, content='About', color=self.__getColor(self.__aboutHover))
+        self.__helpButton = Text(font='../fonts/OdibeeSans-Regular.ttf', fontSize=20, content='Help', color=self.__getColor(self.__helpHover))
 
         self.__fileButton_rect = self.__fileButton.text.get_rect(midleft=(10, 12))
         screen.blit(self.__fileButton.text, self.__fileButton_rect)

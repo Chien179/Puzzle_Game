@@ -1,6 +1,6 @@
 import pygame
 
-class Button:
+class Text:
     def __init__(self, font, fontSize, content, color, isBold = False, isSys = False):
         self.__font = font
         self.__fontSize = fontSize
