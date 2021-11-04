@@ -6,6 +6,8 @@ from text import Text
 from algorithm import AStar
 from messagebox import Messagebox
 from toolbar import Toolbar
+import tkinter as tk
+from tkinter import filedialog
 
 TEXT_FONT = '../fonts/OdibeeSans-Regular.ttf'
 BACKGROUND_COLOR = '#A2C6F0'
@@ -15,15 +17,24 @@ class Game:
 
     def __init__(self, width, height, imgWidth, imgHeight, size):
         pygame.init()
+        pygame.display.set_caption('Puzzle')
+        gameIcon = pygame.image.load(GAME_ICON)
+        pygame.display.set_icon(gameIcon)
+
+        self.__image = '../images/test.png'
         self.__width, self.__height = width, height
         self.__imgWidth, self.__imgHeight = imgWidth, imgHeight
         self.__size = size
         self.__screen = pygame.display.set_mode((self.__width, self.__height))
         end = [i for i in range(1, self.__size ** 2 + 1)]
         self.__goal = numpy.reshape(end, (self.__size, self.__size)).tolist()
-        self.__puzzle = Puzzle('../images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
+        self.__puzzle = Puzzle(self.__image, self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
         self.__start = False
         self.__checkHint = False
+        self.__checkWin = False
+        self.__checkHint = False
+        self.__musicPlaying = True
+
         self.__title_text = Text(font=TEXT_FONT, fontSize=40, content='PUZZLE', color='#FFFFFF')
         self.__music_text = Text(font=TEXT_FONT, fontSize=30, content='Pause', color='#FFFFFF')
         self.__volumeup_text = Text(font='Times New Roman', fontSize=35, content='+', color='#FFFFFF',
@@ -35,19 +46,8 @@ class Game:
         self.__solve_text = Text(font=TEXT_FONT, fontSize=40, content='Solve', color='#FFFFFF')
 
         self.__mess = Messagebox(self.__screen)
-        self.__checkMess = False
-
-        pygame.display.set_caption('Puzzle')
-        self.__checkHint = False
-        gameIcon = pygame.image.load(GAME_ICON)
-        pygame.display.set_icon(gameIcon)
-        self.__toolBar = Toolbar(800, 28)
-        self.__musicPlaying = True
-        self.__playImg = pygame.image.load('../icons/play.png')
-        self.__playImg = pygame.transform.scale(self.__playImg, (32, 32))
-        self.__pauseImg = pygame.image.load('../icons/pause.png')
-        self.__pauseImg = pygame.transform.scale(self.__pauseImg, (25, 25))
-
+        self.__toolBar = Toolbar(TEXT_FONT,800, 28)
+        self.__changeMusicIcon()
 
     def __draw(self):
         # white screen
@@ -56,9 +56,11 @@ class Game:
         surface.blit(self.__puzzle.image, (20, 100))
 
     def __drawText(self):
+        if self.__checkWin:
+            self.__mess.create()
+        self.__toolBar.draw(self.__screen)
         #text:
-        self.__playImg_rect = self.__playImg.get_rect(midleft=(51, 60))
-        self.__pauseImg_rect = self.__pauseImg.get_rect(midleft=(50, 60))
+        self.__musicImg_rect = self.__musicImg.get_rect(midleft=(51, 60))
         self.__title_text_rect = self.__title_text.text.get_rect(center=(self.__width / 2, 60))
         self.__volumeup_text_rect = self.__volumeup_text.text.get_rect(midleft=(85, 60))
         self.__volumedown_text_rect = self.__volumedown_text.text.get_rect(midleft=(30, 57))
@@ -71,7 +73,10 @@ class Game:
                             self.__solve_text,
                             self.__music_text,
                             self.__volumedown_text,
-                            self.__volumeup_text]
+                            self.__volumeup_text,
+                            self.__toolBar.fileButton,
+                            self.__toolBar.aboutButton,
+                            self.__music_text]
 
         surface = self.__screen
         surface.blit(self.__title_text.text, self.__title_text_rect)
@@ -80,10 +85,11 @@ class Game:
         surface.blit(self.__shuffle_text.text, self.__shuffle_text_rect)
         surface.blit(self.__volumedown_text.text, self.__volumedown_text_rect)
         surface.blit(self.__solve_text.text, self.__solve_text_rect)
-        self.__drawMusicIcon()
+        surface.blit(self.__musicImg, self.__musicImg_rect)
 
     def __setPuzzle(self):
         self.__screen.blit(self.__puzzle.image, (20, 100))
+        self.__drawText()
         imgPieceWidth = self.__imgWidth / self.__size
         x, y = 20, 100
         for i in range(0, self.__size):
@@ -144,25 +150,20 @@ class Game:
         nextNode = self.__getIndexMatrix(result[1], self.__size)
         self.__drawHint(nextNode)
 
-    def __drawMusicIcon(self):
-        if self.__musicPlaying:
-            self.__screen.blit(self.__pauseImg, self.__pauseImg_rect)
-        else:
-            self.__screen.blit(self.__playImg, self.__playImg_rect)
+    def __changeMusicIcon(self, icon = '../icons/pause.png'):
+        self.__musicImg = pygame.image.load(icon)
+        self.__musicImg = pygame.transform.scale(self.__musicImg, (24, 24))
 
     def __volumeSetting(self, mousePos):
-        # if self.__musicPause_text_rect.collidepoint(mousePos):
-        if self.__pauseImg_rect.collidepoint(mousePos):
+        if self.__musicImg_rect.collidepoint(mousePos):
             if pygame.mixer.music.get_busy():  # if music is played
-                # self.__draw()
-                pygame.mixer.music.pause()
                 self.__musicPlaying = False
-                self.__drawMusicIcon()
+                pygame.mixer.music.pause()
+                self.__changeMusicIcon('../icons/play.png')
             else:
-                self.__draw()
-                pygame.mixer.music.unpause()
                 self.__musicPlaying = True
-                self.__drawMusicIcon()
+                pygame.mixer.music.unpause()
+                self.__changeMusicIcon()
 
         if self.__volumedown_text_rect.collidepoint(mousePos):
             if self.__currentVolume > 0:
@@ -182,7 +183,7 @@ class Game:
 
     def __shuffle(self):
         self.__puzzle.imgPieces.clear()
-        self.__puzzle = Puzzle('../images/1.jpg', self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
+        self.__puzzle = Puzzle(self.__image, self.__imgWidth, self.__imgHeight, self.__size, self.__goal)
         self.__puzzle.shuffle()
         self.__setPuzzle()
         self.__start = True
@@ -211,19 +212,23 @@ class Game:
                     y += imgPieceWidth
 
     def __hoverButton(self, mousePos):
-        if self.__volumeup_text_rect.collidepoint(mousePos):
+        if self.__toolBar.fileButton_rect.collidepoint(mousePos) and not self.__checkWin and not self.__start:
+            self.__buttonHover(self.__toolBar.fileButton)
+        elif self.__toolBar.aboutButton_rect.collidepoint(mousePos) and not self.__checkWin:
+            self.__buttonHover(self.__toolBar.aboutButton)
+        elif self.__volumeup_text_rect.collidepoint(mousePos) and not self.__checkWin:
             self.__buttonHover(self.__volumeup_text)
-        elif self.__volumedown_text_rect.collidepoint(mousePos):
+        elif self.__volumedown_text_rect.collidepoint(mousePos) and not self.__checkWin:
             self.__buttonHover(self.__volumedown_text)
-        elif self.__shuffle_text_rect.collidepoint(mousePos):
+        elif self.__shuffle_text_rect.collidepoint(mousePos) and not self.__checkWin:
             self.__buttonHover(self.__shuffle_text)
-        elif self.__solve_text_rect.collidepoint(mousePos):
+        elif self.__solve_text_rect.collidepoint(mousePos) and not self.__checkWin:
             self.__buttonHover(self.__solve_text)
-        elif self.__hint_text_rect.collidepoint(mousePos):
+        elif self.__hint_text_rect.collidepoint(mousePos) and not self.__checkWin:
             self.__buttonHover(self.__hint_text)
-        elif self.__mess.playAgain_rect.collidepoint(mousePos) and self.__checkMess:
-                self.__buttonHover(self.__mess.playAgain)
-        elif self.__mess.quit_rect.collidepoint(mousePos) and self.__checkMess:
+        elif self.__mess.playAgain_rect.collidepoint(mousePos) and self.__checkWin:
+            self.__buttonHover(self.__mess.playAgain)
+        elif self.__mess.quit_rect.collidepoint(mousePos) and self.__checkWin:
             self.__buttonHover(self.__mess.quit)
         elif self.__puzzleRect.collidepoint(mousePos) and self.__start:
             pygame.mouse.set_cursor(pygame.cursors.diamond)
@@ -235,15 +240,15 @@ class Game:
 
     def __winState(self):
         if self.__puzzle.win() and self.__start:
-            self.__checkMess = True
+            self.__checkWin = True
             self.__checkHint = False
             self.__start = False
-            self.__mess.create()
 
     def __update(self):
+        self.__draw()
         self.__drawText()
-        self.__toolBar.draw(self.__screen)
-        self.__puzzleRect = pygame.draw.rect(self.__screen,'#CEACA3', pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
+        self.__puzzleRect = pygame.draw.rect(self.__screen,'#CEACA3',
+                                             pygame.Rect(19, 99, self.__imgWidth + 1, self.__imgHeight + 1), 1)
 
         mousePos = pygame.mouse.get_pos()
         for event in pygame.event.get():
@@ -251,26 +256,44 @@ class Game:
                 pygame.quit()
                 exit()
             if event.type == pygame.MOUSEBUTTONUP:
-                if self.__checkMess:
+                if self.__checkWin:
                     if self.__mess.quit_rect.collidepoint(mousePos):
                         pygame.quit()
                         exit()
                     if self.__mess.playAgain_rect.collidepoint(mousePos):
-                        self.__checkMess = False
+                        self.__checkWin = False
                         self.__draw()
                         self.__drawText()
                         self.__game_loop()
                 else:
+                    if not self.__start:
+                        if self.__toolBar.fileButton_rect.collidepoint(mousePos):
+                            root = tk.Tk() #init a Tkapp
+                            root.withdraw() #hide TKapp
+
+                            filetypes = (
+                                ('image file', '*.jpg'),
+                                ('image file', '*.png')
+                            )
+
+                            file_path = filedialog.askopenfilename(title='Open a file',
+                                                                   initialdir='/',
+                                                                   filetypes = filetypes)
+                            if file_path != '':
+                                self.__image = file_path
+                                self.__puzzle = Puzzle(self.__image,
+                                                       self.__imgWidth, self.__imgHeight,
+                                                       self.__size, self.__goal)
+                            root.destroy()
                     if self.__shuffle_text_rect.collidepoint(mousePos):
                         self.__shuffle()
                     elif self.__start:
                         self.__solveAndHint(mousePos)
                         self.__controlPuzzle(mousePos)
-                self.__volumeSetting(mousePos)
-        self.__hoverButton(mousePos)
+                    self.__volumeSetting(mousePos)
 
+        self.__hoverButton(mousePos)
         self.__winState()
-        self.__toolBar.toolBarHover(mousePos)
         if self.__start:
             self.__hoverPuzzleArea(mousePos)
 
