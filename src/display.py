@@ -68,6 +68,7 @@ class Display:
         pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
     def __createRect(self):
+        #create rectangle for buttons
         self.musicImg_rect = self.__musicImg.get_rect(midleft=(51, 60))
         self.__title_text_rect = self.__title_text.text.get_rect(center=(self.width / 2, 60))
         self.volumeUp_text_rect = self.__volumeUp_text.text.get_rect(midleft=(85, 60))
@@ -96,8 +97,11 @@ class Display:
 
     def drawText(self):
         if self.checkWin:
+            #show messagebox win
             self.mess.create()
         self.toolBar.draw(self.__screen)
+
+        #draw buttons
         surface = self.__screen
         surface.blit(self.__title_text.text, self.__title_text_rect)
         surface.blit(self.__hint_text.text, self.hint_text_rect)
@@ -108,6 +112,7 @@ class Display:
         surface.blit(self.__musicImg, self.musicImg_rect)
 
     def hoverButton(self, mousePos):
+        #hover buttons in main display
         if not self.checkWin:
             if self.toolBar.fileButton_rect.collidepoint(mousePos) and not self.start:
                 self.__buttonHover(self.toolBar.fileButton)
@@ -137,6 +142,7 @@ class Display:
                 else:
                     self.__musicImgLeft('../icons/play.png')
         else:
+            #hover button in messagebox
             if self.mess.playAgain_rect.collidepoint(mousePos):
                 self.__buttonHover(self.mess.playAgain)
             elif self.mess.quit_rect.collidepoint(mousePos):
@@ -178,13 +184,14 @@ class Display:
                     y += imgPieceWidth
 
     def hoverPuzzleArea(self, mousePos):
-        self.__screen.blit(self.puzzle.image, (20, 100))
+        self.drawText()
         imgPieceWidth = self.imgWidth / self.size
         x, y = 20, 100
         for i in range(0, self.size):
             for j in range(0, self.size):
                 if self.puzzle.imgRect[i][j].collidepoint(mousePos):
                     self.checkHint = False
+                    #draw rectangle when mouse hover to puzzle pieces
                     self.__drawRect(self.puzzle.imgPieces[i][j], imgPieceWidth, (250, 250, 250))
                 elif not self.checkHint:
                     self.__drawRect(self.puzzle.imgPieces[i][j], imgPieceWidth)
@@ -196,7 +203,7 @@ class Display:
 
     @staticmethod
     def __drawRect(image, imgPieceWidth, color=(0, 0, 0)):
-        pygame.draw.rect(image, color, pygame.Rect(0, 0, imgPieceWidth, imgPieceWidth), 1)
+        pygame.draw.rect(image, color, pygame.Rect(0, 0, imgPieceWidth, imgPieceWidth), 3)
 
     @staticmethod
     def __buttonLeft(text):

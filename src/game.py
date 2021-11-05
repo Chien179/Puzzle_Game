@@ -1,9 +1,11 @@
 import pygame
+import webbrowser
 from pygame.time import delay
 from file import File
 from puzzle import Puzzle
 from display import Display
 from algorithm import AStar
+
 
 class Game:
 
@@ -13,6 +15,7 @@ class Game:
                                  imgWidth, imgHeight)
 
     def __animationPuzzle(self, current, nextNode):
+        #change position puzzle pieces to create animation for solve problem
         if current[0] == nextNode[0] and current[1] != nextNode[1]:
             self.__display.puzzle.swap_col(current[0], current[1], nextNode[1])
         elif current[1] == nextNode[1] and current[0] != nextNode[0]:
@@ -83,6 +86,11 @@ class Game:
                 if self.__display.puzzle.imgRect[i][j].collidepoint(mousePos):
                     self.__display.puzzle.control(i, j)
 
+    def __about(self, mousePos):
+        if self.__display.toolBar.aboutButton_rect.collidepoint(mousePos):
+            url = 'https://github.com/Chien179/Puzzle_Game/blob/main/README.md'
+            webbrowser.open(url, new=0)
+
     def __winState(self):
         if self.__display.puzzle.win() and self.__start:
             self.__display.checkWin = True
@@ -93,8 +101,6 @@ class Game:
     def __update(self):
         self.__display.draw()
         self.__display.drawText()
-        if self.__display.checkWin:
-            delay(500)
 
         mousePos = pygame.mouse.get_pos()
         for event in pygame.event.get():
@@ -126,6 +132,7 @@ class Game:
                         self.__solveAndHint(mousePos)
                         self.__controlPuzzle(mousePos)
                     self.__volumeSetting(mousePos)
+                    self.__about(mousePos)
 
         self.__display.hoverButton(mousePos)
         self.__winState()
