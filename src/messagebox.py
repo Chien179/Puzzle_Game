@@ -16,6 +16,7 @@ class Messagebox:
         self.quit_rect = self.quit.text.get_rect(midleft=(420, 330))
 
     def create(self):
+        #display messagebox
         pygame.draw.rect(self.__surface, '#CEACA3', pygame.Rect(200, 180, 340, 200))
         self.__surface.blit(self.__title.text, self.title_rect)
         self.__surface.blit(self.__win.text, self.win_rect)

@@ -13,10 +13,12 @@ class Puzzle:
         self.__goal = goal
 
     def __createPuzzle(self):
+        # if images size bigger then imgWidth and Height, cut image
         if self.image.get_width() > self.__width and self.image.get_height() > self.__height:
             x = int((self.image.get_width() - self.__width) / 2)
             y = int((self.image.get_height() - self.__height) / 2)
             self.image = self.image.subsurface((x, y, self.__width, self.__height))
+        #if images size bigger then imgWidth and Height, resize image
         elif self.image.get_width() < self.__width and self.image.get_height() < self.__height:
             self.image = pygame.transform.scale(self.image, (self.__width, self.__height))
 
@@ -24,13 +26,14 @@ class Puzzle:
         for _ in range(0, self.__size):
             imgTemp = []
             for j in range(0, self.__size):
+                #create subsurface for image pieces
                 imgTemp.append(self.image.subsurface(x, y, self.__width / self.__size, self.__height / self.__size).convert_alpha())
                 x += self.__width / self.__size
                 if j == self.__size - 1:
                     x = 0
                     y += self.__height / self.__size
             self.imgPieces.append(imgTemp)
-
+        #creat image pieces 9
         blank = pygame.Surface((self.__width / self.__size, self.__height / self.__size))
         blank = blank.convert_alpha()
         blank.fill('black')
@@ -45,11 +48,13 @@ class Puzzle:
         num = [i for i in range(1, (self.__size**2) + 1)]
         n = -1
 
+        #check goal state can reverse to start state
         while n % 2 != 0:
             random.shuffle(num)
             n = self.__check_state(num)
         self.imgNum = numpy.reshape(num, (self.__size, self.__size)).tolist()
 
+        #make imgPieces state like imgNum
         for i in range(0, self.__size):
             for j in range(0, self.__size):
                 row = int((self.imgNum[i][j] - 1) / self.__size)
@@ -70,6 +75,7 @@ class Puzzle:
             if self.imgNum[numPieceX][numPieceY + 1] == self.__size ** 2:
                 self.swap_col(numPieceX, numPieceY, numPieceY + 1)
 
+    #move imgPiece row
     def swap_row(self, row, rowb, col):
         imgTemp = self.imgPieces[row][col]
         self.imgPieces[row][col] = self.imgPieces[rowb][col]
@@ -78,6 +84,7 @@ class Puzzle:
         self.imgNum[row][col] = self.imgNum[rowb][col]
         self.imgNum[rowb][col] = numTemp
 
+    # move imgPiece col
     def swap_col(self, row, col, colb):
         imgTemp = self.imgPieces[row][col]
         self.imgPieces[row][col] = self.imgPieces[row][colb]
