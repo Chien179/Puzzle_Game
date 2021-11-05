@@ -1,4 +1,3 @@
-import numpy
 from copy import deepcopy
 from node import Node
 

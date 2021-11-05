@@ -2,7 +2,6 @@ import random
 import numpy
 import pygame
 
-
 class Puzzle:
     def __init__(self, image, width, height, size, goal):
         self.image = pygame.image.load(image).convert_alpha()
@@ -18,6 +17,8 @@ class Puzzle:
             x = int((self.image.get_width() - self.__width) / 2)
             y = int((self.image.get_height() - self.__height) / 2)
             self.image = self.image.subsurface((x, y, self.__width, self.__height))
+        elif self.image.get_width() < self.__width and self.image.get_height() < self.__height:
+            self.image = pygame.transform.scale(self.image, (self.__width, self.__height))
 
         x, y = 0, 0
         for _ in range(0, self.__size):
@@ -35,6 +36,7 @@ class Puzzle:
         blank.fill('black')
         blank.set_alpha(200)
         self.imgPieces[self.__size - 1][self.__size - 1] = blank
+
 
     def shuffle(self):
         imgTemp = []
@@ -85,7 +87,7 @@ class Puzzle:
         self.imgNum[row][colb] = numTemp
 
     def displayImage(self):
-        return pygame.image.load(self.image).convert_alpha()
+        return self.image
 
     def win(self):
         return self.imgNum == self.__goal
