@@ -59,6 +59,14 @@ class Display:
         self.__musicImg = pygame.image.load(icon)
         self.__musicImg = pygame.transform.scale(self.__musicImg, (24, 24))
 
+    def __musicImgHover(self, icon):
+        self.musicIcon(icon)
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+
+    def __musicImgLeft(self, icon):
+        self.musicIcon(icon)
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
     def __createRect(self):
         self.musicImg_rect = self.__musicImg.get_rect(midleft=(51, 60))
         self.__title_text_rect = self.__title_text.text.get_rect(center=(self.width / 2, 60))
@@ -106,9 +114,9 @@ class Display:
             elif self.toolBar.aboutButton_rect.collidepoint(mousePos):
                 self.__buttonHover(self.toolBar.aboutButton)
             elif self.musicImg_rect.collidepoint(mousePos) and self.musicPlaying:
-                pass
+                self.__musicImgHover('../icons/pauseHover.png')
             elif self.musicImg_rect.collidepoint(mousePos) and not self.musicPlaying:
-                pass
+                self.__musicImgHover('../icons/playHover.png')
             elif self.volumeUp_text_rect.collidepoint(mousePos):
                 self.__buttonHover(self.__volumeUp_text)
             elif self.volumeDown_text_rect.collidepoint(mousePos):
@@ -124,6 +132,10 @@ class Display:
             else:
                 for text in self.__rect_list:
                     self.__buttonLeft(text)
+                if self.musicPlaying:
+                    self.__musicImgLeft('../icons/pause.png')
+                else:
+                    self.__musicImgLeft('../icons/play.png')
         else:
             if self.mess.playAgain_rect.collidepoint(mousePos):
                 self.__buttonHover(self.mess.playAgain)
