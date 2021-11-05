@@ -52,11 +52,11 @@ class Game:
     def __volumeSetting(self, mousePos):
         if self.__display.musicImg_rect.collidepoint(mousePos):
             if pygame.mixer.music.get_busy():  # if music is played
-                self.__musicPlaying = False
+                self.__display.musicPlaying = False
                 pygame.mixer.music.pause()
                 self.__display.musicIcon('../icons/play.png')
             else:
-                self.__musicPlaying = True
+                self.__display.musicPlaying = True
                 pygame.mixer.music.unpause()
                 self.__display.musicIcon()
 
