@@ -32,9 +32,9 @@ class Display:
         self.__title_text = Text(font=TEXT_FONT, fontSize=40, content='PUZZLE', color='#FFFFFF')
         self.__music_text = Text(font=TEXT_FONT, fontSize=30, content='Pause', color='#FFFFFF')
         self.__volumeUp_text = Text(font='Times New Roman', fontSize=35, content='+', color='#FFFFFF',
-                                    isBold=False, isSys=True)
+                                    isBold=True, isSys=True)
         self.__volumeDown_text = Text(font='Times New Roman', fontSize=35, content='-', color='#FFFFFF',
-                                      isBold=False, isSys=True)
+                                      isBold=True, isSys=True)
         self.__shuffle_text = Text(font=TEXT_FONT, fontSize=40, content='Shuffle', color='#FFFFFF')
         self.__hint_text = Text(font=TEXT_FONT, fontSize=40, content='Hint', color='#FFFFFF')
         self.__solve_text = Text(font=TEXT_FONT, fontSize=40, content='Solve', color='#FFFFFF')
